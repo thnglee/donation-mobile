@@ -13,10 +13,24 @@ import java.util.List;
 public class DonationApi {
 	//////////////////////////////////////////////////////////////////////////////////	
 	public static List<Donation> getAll(String call) {
-		String json = Rest.get(call);
-		Type collectionType = new TypeToken<List<Donation>>(){}.getType();
-		
-		return new Gson().fromJson(json, collectionType);
+		try {
+			Log.d("DonationApi", "Making request to: " + call);
+			String json = Rest.get(call);
+			Log.d("DonationApi", "Received response: " + json);
+			
+			if (json == null || json.isEmpty()) {
+				Log.e("DonationApi", "Received empty response from server");
+				return null;
+			}
+			
+			Type collectionType = new TypeToken<List<Donation>>(){}.getType();
+			List<Donation> donations = new Gson().fromJson(json, collectionType);
+			Log.d("DonationApi", "Parsed donations: " + donations.size());
+			return donations;
+		} catch (Exception e) {
+			Log.e("DonationApi", "Error getting donations: " + e.getMessage(), e);
+			return null;
+		}
 	}
 	//////////////////////////////////////////////////////////////////////////////////
 	public static Donation get(String call,String id) {

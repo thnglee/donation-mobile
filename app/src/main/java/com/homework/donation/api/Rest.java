@@ -32,35 +32,42 @@ public class Rest {
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	public static String get(String url) {
-
-        BufferedReader reader = null;
-        StringBuilder stringBuilder = null;
+		BufferedReader reader = null;
+		StringBuilder stringBuilder = new StringBuilder();
 
 		try {
 			setup(url);
-            httpCon.setRequestMethod("GET");
-            httpCon.setDoInput(true);
+			httpCon.setRequestMethod("GET");
+			httpCon.setDoInput(true);
 			httpCon.connect();
 
-            Log.v("donate", "GET REQUEST is : " + httpCon.getRequestMethod() + " " + httpCon.getURL());
-
-            // read the output from the server
-            reader = new BufferedReader(new InputStreamReader(httpCon.getInputStream()));
-            stringBuilder = new StringBuilder();
-
-            String line = null;
-            while ((line = reader.readLine()) != null)
-                stringBuilder.append(line);
-
-            reader.close();
-            Log.v("donate", "JSON GET REQUEST : " + stringBuilder.toString());
+			int responseCode = httpCon.getResponseCode();
+			Log.v("donate", "Response code: " + responseCode);
+			
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				reader = new BufferedReader(new InputStreamReader(httpCon.getInputStream()));
+				String line;
+				while ((line = reader.readLine()) != null) {
+					stringBuilder.append(line);
+				}
+				Log.v("donate", "JSON GET RESPONSE: " + stringBuilder.toString());
+				return stringBuilder.toString();
+			} else {
+				Log.e("donate", "Server returned error code: " + responseCode);
+				return null;
+			}
+		} catch (Exception e) {
+			Log.e("donate", "GET REQUEST ERROR: " + e.getMessage(), e);
+			return null;
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (Exception e) {
+					Log.e("donate", "Error closing reader", e);
+				}
+			}
 		}
-
-        catch (Exception e) {
-			Log.v("donate","GET REQUEST ERROR" + e.getMessage());
-		}
-
-        return stringBuilder.toString();
 	}
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////
